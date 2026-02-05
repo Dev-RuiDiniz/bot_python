@@ -5,7 +5,8 @@ from __future__ import annotations
 from multiprocessing import Pool
 from typing import Any
 
-from bot.runner.instance_runner import InstanceConfig, run_instance
+from bot.config.loader import InstanceConfig
+from bot.runner.instance_runner import run_instance
 
 
 def _run(payload: tuple[InstanceConfig, dict[str, Any]]) -> int:

@@ -1,21 +1,31 @@
 # bot_python
 
-Estrutura inicial de automação Android com ADB + OpenCV, separada por camadas:
+Fundação do bot Android (DIA 1), com foco em arquitetura e execução por instância.
 
-- `bot/core`: wrappers de ADB, visão, exceções e logging.
-- `bot/flow`: passos de automação baseados em `Step`.
-- `bot/runner`: execução por instância e orquestração em multiprocess.
-- `bot/config`: configurações externas em YAML.
-- `bot/assets/templates`: templates OpenCV.
+## Estrutura
+
+- `bot/config`: YAML e loader de configurações (`bot.yaml` e `instances.yaml`).
+- `bot/core`: wrappers de ADB, visão inicial, exceções e logger por instância.
+- `bot/flow`: passos da automação (inclui `step_00_mock` para bootstrap).
+- `bot/runner`: runner de instância e execução multiprocess.
+- `bot/main.py`: orquestração via configuração.
 
 ## Execução
+
+### Sequencial
 
 ```bash
 python -m bot.main --bot-config bot/config/bot.yaml --instances-config bot/config/instances.yaml
 ```
 
-Modo paralelo:
+### Paralelo com config
 
 ```bash
 python -m bot.main --parallel
+```
+
+### Paralelo com 2 instâncias fake (bootstrap)
+
+```bash
+python -m bot.main --fake
 ```

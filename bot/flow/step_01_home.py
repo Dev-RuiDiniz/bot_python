@@ -18,4 +18,4 @@ class Step01Home(Step):
 
         template = context.config.get("templates", {}).get("home", "home.png")
         result = context.vision.wait_for(capture, template_name=template, timeout_s=10)
-        context.logger.info("Home detectado com score %.3f em %s", result.score, result.center)
+        context.logger.info("Home detectado com score %.3f em %s", result["score"], result["center"])
