@@ -29,3 +29,8 @@ python -m bot.main --parallel
 ```bash
 python -m bot.main --fake
 ```
+
+
+## Relatórios
+
+- `docs/RELATORIO_DIA1.md`: relatório textual por task do DIA 1.
