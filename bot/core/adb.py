@@ -52,6 +52,9 @@ class ADBClient:
     def tap(self, x: int, y: int) -> None:
         self._run_text("shell", "input", "tap", str(x), str(y))
 
+    def keyevent(self, keycode: int) -> None:
+        self._run_text("shell", "input", "keyevent", str(keycode))
+
     def start_app(self, package: str, activity: str) -> None:
         self._run_text("shell", "am", "start", "-n", f"{package}/{activity}")
 

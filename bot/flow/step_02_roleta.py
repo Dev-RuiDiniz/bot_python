@@ -16,7 +16,7 @@ class Step02Roleta(Step):
         def capture() -> str:
             return str(context.adb.screencap(str(screenshot_path)))
 
-        template = context.config.get("templates", {}).get("roleta", "roleta.png")
+        template = "roleta.botao_roleta"
         result = context.vision.wait_for(capture, template_name=template, timeout_s=8)
         context.adb.tap(*result["center"])
         context.logger.info("Roleta acionada em %s (score %.3f)", result["center"], result["score"])

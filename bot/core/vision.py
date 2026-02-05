@@ -5,6 +5,7 @@ from __future__ import annotations
 import time
 from pathlib import Path
 from typing import Callable, Optional
+import logging
 
 from bot.core.exceptions import SoftFail
 
@@ -15,20 +16,32 @@ except ImportError:  # pragma: no cover - dependency may be optional in bootstra
 
 
 class Vision:
-    def __init__(self, templates_dir: str) -> None:
+    def __init__(self, templates_dir: str, template_map: Optional[dict[str, str]] = None) -> None:
         self.templates_dir = Path(templates_dir)
+        self.template_map = template_map or {}
         self._templates: dict[str, object] = {}
 
     def _ensure_cv2(self) -> None:
         if cv2 is None:
             raise SoftFail("opencv-python is required for vision operations")
 
+    def _resolve_template_path(self, name: str) -> Path:
+        if name in self.template_map:
+            return self.templates_dir / self.template_map[name]
+
+        explicit = self.templates_dir / name
+        if explicit.exists():
+            return explicit
+
+        logical = self.templates_dir / f"{name.replace('.', '/')}.png"
+        return logical
+
     def load_template(self, name: str):
         self._ensure_cv2()
         if name in self._templates:
             return self._templates[name]
 
-        path = self.templates_dir / name
+        path = self._resolve_template_path(name)
         if not path.exists():
             raise SoftFail(f"Template not found: {path}")
         template = cv2.imread(str(path), cv2.IMREAD_COLOR)
@@ -64,6 +77,27 @@ class Vision:
             "score": float(max_val),
             "center": (max_loc[0] + w // 2, max_loc[1] + h // 2),
         }
+
+    def click_template(
+        self,
+        capture_fn: Callable[[], str],
+        adb: object,
+        template_name: str,
+        threshold: float = 0.90,
+        logger: Optional[logging.Logger] = None,
+    ) -> dict[str, object]:
+        screen_path = capture_fn()
+        result = self.match_template(screen_path, template_name=template_name, threshold=threshold)
+        center_x, center_y = result["center"]
+        adb.tap(center_x, center_y)
+        (logger or logging.getLogger(__name__)).info(
+            "click_template(%s): confidence=%.3f coords=(%d,%d)",
+            template_name,
+            result["score"],
+            center_x,
+            center_y,
+        )
+        return result
 
     def wait_for(
         self,
