@@ -46,23 +46,18 @@ class ADBClient:
         except subprocess.TimeoutExpired as exc:
             raise CriticalFail(f"ADB command timeout: {' '.join(cmd)}") from exc
 
+    def connect(self) -> None:
+        self._run_text("wait-for-device")
+
     def tap(self, x: int, y: int) -> None:
         self._run_text("shell", "input", "tap", str(x), str(y))
 
-    def swipe(self, x1: int, y1: int, x2: int, y2: int, duration_ms: int = 300) -> None:
-        self._run_text(
-            "shell",
-            "input",
-            "swipe",
-            str(x1),
-            str(y1),
-            str(x2),
-            str(y2),
-            str(duration_ms),
-        )
+    def start_app(self, package: str, activity: str) -> None:
+        self._run_text("shell", "am", "start", "-n", f"{package}/{activity}")
 
     def launch_app(self, package: str, activity: str) -> None:
-        self._run_text("shell", "am", "start", "-n", f"{package}/{activity}")
+        """Backward-compatible alias for start_app."""
+        self.start_app(package, activity)
 
     def stop_app(self, package: str) -> None:
         self._run_text("shell", "am", "force-stop", package)

@@ -2,28 +2,19 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Any, Iterable
 
+from bot.config.loader import InstanceConfig
 from bot.core.adb import ADBClient
 from bot.core.exceptions import CriticalFail, SoftFail
 from bot.core.logger import setup_instance_logger
 from bot.core.vision import Vision
-from bot.flow.step_01_home import Step01Home
-from bot.flow.step_02_roleta import Step02Roleta
+from bot.flow.step_00_mock import Step00Mock
 from bot.flow.step_base import Step, StepContext
 
 
-@dataclass(slots=True)
-class InstanceConfig:
-    instance_id: str
-    serial: str
-    app_package: str
-    app_activity: str
-
-
 def default_steps() -> Iterable[Step]:
-    return [Step01Home(), Step02Roleta()]
+    return [Step00Mock()]
 
 
 def run_instance(instance: InstanceConfig, bot_config: dict[str, Any]) -> int:
@@ -40,7 +31,8 @@ def run_instance(instance: InstanceConfig, bot_config: dict[str, Any]) -> int:
 
     try:
         logger.info("Iniciando instância %s", instance.instance_id)
-        adb.launch_app(instance.app_package, instance.app_activity)
+        adb.connect()
+        adb.start_app(instance.app_package, instance.app_activity)
 
         for step in default_steps():
             logger.info("Executando %s", step)
