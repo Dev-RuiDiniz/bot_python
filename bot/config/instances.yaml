@@ -1,0 +1,5 @@
+instances:
+  - id: emu_01
+    serial: emulator-5554
+    app_package: com.example.app
+    app_activity: .MainActivity

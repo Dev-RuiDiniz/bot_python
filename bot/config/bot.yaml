@@ -1,0 +1,6 @@
+adb_bin: adb
+templates_dir: bot/assets/templates
+logs_dir: logs
+templates:
+  home: home.png
+  roleta: roleta.png
