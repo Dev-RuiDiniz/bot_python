@@ -18,5 +18,5 @@ class Step02Roleta(Step):
 
         template = context.config.get("templates", {}).get("roleta", "roleta.png")
         result = context.vision.wait_for(capture, template_name=template, timeout_s=8)
-        context.adb.tap(*result.center)
-        context.logger.info("Roleta acionada em %s (score %.3f)", result.center, result.score)
+        context.adb.tap(*result["center"])
+        context.logger.info("Roleta acionada em %s (score %.3f)", result["center"], result["score"])

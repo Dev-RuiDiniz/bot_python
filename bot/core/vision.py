@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Optional
 
@@ -15,15 +14,10 @@ except ImportError:  # pragma: no cover - dependency may be optional in bootstra
     cv2 = None
 
 
-@dataclass(slots=True)
-class MatchResult:
-    score: float
-    center: tuple[int, int]
-
-
 class Vision:
     def __init__(self, templates_dir: str) -> None:
         self.templates_dir = Path(templates_dir)
+        self._templates: dict[str, object] = {}
 
     def _ensure_cv2(self) -> None:
         if cv2 is None:
@@ -31,15 +25,26 @@ class Vision:
 
     def load_template(self, name: str):
         self._ensure_cv2()
+        if name in self._templates:
+            return self._templates[name]
+
         path = self.templates_dir / name
         if not path.exists():
             raise SoftFail(f"Template not found: {path}")
         template = cv2.imread(str(path), cv2.IMREAD_COLOR)
         if template is None:
             raise SoftFail(f"Unable to read template: {path}")
+        self._templates[name] = template
         return template
 
-    def match_template(self, screen_path: str, template_name: str, threshold: float = 0.90) -> MatchResult:
+    def exists(self, screen_path: str, template_name: str, threshold: float = 0.90) -> bool:
+        try:
+            self.match_template(screen_path, template_name, threshold=threshold)
+            return True
+        except SoftFail:
+            return False
+
+    def match_template(self, screen_path: str, template_name: str, threshold: float = 0.90):
         self._ensure_cv2()
         screen = cv2.imread(screen_path, cv2.IMREAD_COLOR)
         if screen is None:
@@ -55,8 +60,10 @@ class Vision:
             )
 
         h, w = template.shape[:2]
-        center = (max_loc[0] + w // 2, max_loc[1] + h // 2)
-        return MatchResult(score=float(max_val), center=center)
+        return {
+            "score": float(max_val),
+            "center": (max_loc[0] + w // 2, max_loc[1] + h // 2),
+        }
 
     def wait_for(
         self,
@@ -65,7 +72,7 @@ class Vision:
         timeout_s: int = 15,
         interval_s: float = 0.5,
         threshold: float = 0.90,
-    ) -> MatchResult:
+    ) -> dict[str, object]:
         deadline = time.monotonic() + timeout_s
         last_error: Optional[Exception] = None
 
