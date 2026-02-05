@@ -1,6 +1,15 @@
 adb_bin: adb
 templates_dir: bot/assets/templates
 logs_dir: logs
+chrome_package: com.android.chrome
+vpn_package: com.vpn.app
 templates:
-  home: home.png
-  roleta: roleta.png
+  home.tela_home: home/tela_home.png
+  home.botao_home: home/botao_home.png
+  erros.popup_erro_conexao: erros/popup_erro_conexao.png
+  erros.app_crash: erros/app_crash.png
+  roleta.botao_roleta: roleta/botao_roleta.png
+step_01:
+  max_attempts: 3
+  home_timeout_s: 12
+  recovery_back_limit: 3

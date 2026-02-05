@@ -2,6 +2,8 @@
 
 Fundação do bot Android (DIA 1), com foco em arquitetura e execução por instância.
 
+Atualização DIA 2: runner com isolamento por processo, safe shutdown e Step 01 robusto para validação de Home.
+
 ## Estrutura
 
 - `bot/config`: YAML e loader de configurações (`bot.yaml` e `instances.yaml`).
@@ -17,6 +19,8 @@ Fundação do bot Android (DIA 1), com foco em arquitetura e execução por inst
 ```bash
 python -m bot.main --bot-config bot/config/bot.yaml --instances-config bot/config/instances.yaml
 ```
+
+> O fluxo padrão atual executa o `step_01_home`.
 
 ### Paralelo com config
 
