@@ -7,13 +7,16 @@ from pathlib import Path
 from typing import Any
 
 
-
 @dataclass(slots=True)
 class BotConfig:
     adb_bin: str = "adb"
     templates_dir: str = "bot/assets/templates"
     logs_dir: str = "logs"
     templates: dict[str, str] | None = None
+    chrome_package: str = "com.android.chrome"
+    vpn_package: str = "com.vpn.app"
+    step_01: dict[str, Any] | None = None
+    step_03: dict[str, Any] | None = None
 
     @classmethod
     def from_dict(cls, raw: dict[str, Any]) -> "BotConfig":
@@ -22,6 +25,10 @@ class BotConfig:
             templates_dir=raw.get("templates_dir", "bot/assets/templates"),
             logs_dir=raw.get("logs_dir", "logs"),
             templates=raw.get("templates", {}) or {},
+            chrome_package=raw.get("chrome_package", "com.android.chrome"),
+            vpn_package=raw.get("vpn_package", "com.vpn.app"),
+            step_01=raw.get("step_01", {}) or {},
+            step_03=raw.get("step_03", {}) or {},
         )
 
 

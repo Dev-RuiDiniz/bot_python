@@ -7,11 +7,13 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any
 
+from bot.core.adb_interface import IAdb
+
 
 @dataclass(slots=True)
 class StepContext:
     instance_id: str
-    adb: Any
+    adb: IAdb
     vision: Any
     logger: logging.Logger
     config: dict[str, Any]

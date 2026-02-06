@@ -1,9 +1,10 @@
-"""Step 02: example interaction with roulette button."""
+"""Step 02: initial roulette skeleton (optional availability)."""
 
 from __future__ import annotations
 
 from pathlib import Path
 
+from bot.core.exceptions import SoftFail
 from bot.flow.step_base import Step, StepContext
 
 
@@ -16,7 +17,11 @@ class Step02Roleta(Step):
         def capture() -> str:
             return str(context.adb.screencap(str(screenshot_path)))
 
-        template = "roleta.botao_roleta"
-        result = context.vision.wait_for(capture, template_name=template, timeout_s=8)
-        context.adb.tap(*result["center"])
-        context.logger.info("Roleta acionada em %s (score %.3f)", result["center"], result["score"])
+        screen_path = capture()
+        popup_available = "roleta.popup_roleta_disponivel"
+        if not context.vision.exists(screen_path, popup_available, threshold=0.88):
+            raise SoftFail("Roleta indisponível no momento (skeleton default)")
+
+        context.logger.info("[inst=%s][step=%s][attempt=1] Roleta disponível, executando giro único", context.instance_id, self.name)
+        context.vision.click_template(capture, context.adb, "roleta.botao_roleta", threshold=0.88, logger=context.logger)
+        context.vision.click_template(capture, context.adb, "roleta.botao_fechar", threshold=0.88, logger=context.logger)

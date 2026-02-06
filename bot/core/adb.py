@@ -7,10 +7,11 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from bot.core.exceptions import CriticalFail
+from bot.core.adb_interface import IAdb
 
 
 @dataclass(slots=True)
-class ADBClient:
+class ADBClient(IAdb):
     """ADB wrapper bound to a single device serial."""
 
     serial: str
