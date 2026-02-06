@@ -11,6 +11,11 @@ templates:
   roleta.botao_roleta: roleta/botao_roleta.png
   roleta.botao_fechar: roleta/botao_fechar.png
   roleta.popup_roleta_disponivel: roleta/popup_roleta_disponivel.png
+  amigos.botao_entrar: amigos/botao_entrar.png
+  amigos.tela_amigos: amigos/tela_amigos.png
+  amigos.botao_recolher: amigos/botao_recolher.png
+  amigos.botao_enviar: amigos/botao_enviar.png
+  amigos.sem_presentes: amigos/sem_presentes.png
 step_01:
   max_attempts: 3
   home_timeout_s: 12
@@ -18,3 +23,11 @@ step_01:
 
 step_03:
   recovery_back_limit: 3
+
+step_04:
+  cycles: 3
+  max_interactions: 20
+  timeout_enter: 8
+  timeout_loop: 8
+  enter_retries: 2
+  click_jitter_px: 2

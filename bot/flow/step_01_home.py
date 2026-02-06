@@ -6,6 +6,7 @@ from pathlib import Path
 import time
 
 from bot.core.exceptions import CriticalFail, SoftFail
+from bot.core.template_ids import T_ERROR_APP_CRASH, T_ERROR_CONN, T_HOME_SCREEN
 from bot.flow.recovery import recover_to_home
 from bot.flow.step_base import Step, StepContext
 
@@ -19,9 +20,6 @@ class Step01Home(Step):
         max_attempts = int(step_cfg.get("max_attempts", 3))
         timeout_s = int(step_cfg.get("home_timeout_s", 12))
         retries_back = int(step_cfg.get("recovery_back_limit", 3))
-        template_home = "home.tela_home"
-        template_conn_error = "erros.popup_erro_conexao"
-        template_app_crash = "erros.app_crash"
 
         def capture() -> str:
             return str(context.adb.screencap(str(screenshot_path)))
@@ -37,7 +35,7 @@ class Step01Home(Step):
             )
             context.adb.start_app(context.config["app_package"], context.config["app_activity"])
             try:
-                result = context.vision.wait_for(capture, template_name=template_home, timeout_s=timeout_s)
+                result = context.vision.wait_for(capture, template_name=T_HOME_SCREEN, timeout_s=timeout_s)
                 context.logger.info(
                     "[inst=%s][step=%s][attempt=%d] Home detectado com score %.3f em %s",
                     context.instance_id,
@@ -56,7 +54,7 @@ class Step01Home(Step):
                 )
 
             screen_path = capture()
-            if context.vision.exists(screen_path, template_conn_error, threshold=0.88):
+            if context.vision.exists(screen_path, T_ERROR_CONN, threshold=0.88):
                 context.logger.warning(
                     "[inst=%s][step=%s][attempt=%d] Popup de erro de conexão detectado; tentando fechar",
                     context.instance_id,
@@ -67,7 +65,7 @@ class Step01Home(Step):
                 time.sleep(0.5)
                 continue
 
-            if context.vision.exists(screen_path, template_app_crash, threshold=0.88):
+            if context.vision.exists(screen_path, T_ERROR_APP_CRASH, threshold=0.88):
                 context.logger.error(
                     "[inst=%s][step=%s][attempt=%d] Crash detectado; relançando app",
                     context.instance_id,

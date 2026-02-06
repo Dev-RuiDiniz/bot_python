@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import time
+import random
 from pathlib import Path
 from typing import Callable, Optional
 import logging
@@ -119,3 +120,39 @@ class Vision:
                 time.sleep(interval_s)
 
         raise SoftFail(f"Timeout waiting for template '{template_name}': {last_error}")
+
+    def wait_and_click(
+        self,
+        capture_fn: Callable[[], str],
+        adb: object,
+        template_name: str,
+        timeout_s: int = 15,
+        interval_s: float = 0.5,
+        threshold: float = 0.90,
+        logger: Optional[logging.Logger] = None,
+        jitter_px: int = 0,
+        post_sleep_s: float = 0.15,
+    ) -> dict[str, object]:
+        result = self.wait_for(
+            capture_fn,
+            template_name=template_name,
+            timeout_s=timeout_s,
+            interval_s=interval_s,
+            threshold=threshold,
+        )
+        center_x, center_y = result["center"]
+        if jitter_px > 0:
+            center_x += random.randint(-jitter_px, jitter_px)
+            center_y += random.randint(-jitter_px, jitter_px)
+        adb.tap(center_x, center_y)
+        (logger or logging.getLogger(__name__)).info(
+            "wait_and_click(%s): confidence=%.3f coords=(%d,%d) jitter=%d",
+            template_name,
+            result["score"],
+            center_x,
+            center_y,
+            jitter_px,
+        )
+        if post_sleep_s > 0:
+            time.sleep(post_sleep_s)
+        return result
