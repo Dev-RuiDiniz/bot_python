@@ -38,10 +38,15 @@ def main() -> int:
         "templates_dir": bot_config.templates_dir,
         "logs_dir": bot_config.logs_dir,
         "templates": bot_config.templates or {},
+        "default_confidence": bot_config.default_confidence,
+        "templates_confidence": bot_config.templates_confidence or {},
         "chrome_package": bot_config.chrome_package,
         "vpn_package": bot_config.vpn_package,
         "step_01": bot_config.step_01 or {},
         "step_03": bot_config.step_03 or {},
+        "step_04": bot_config.step_04 or {},
+        "step_05": bot_config.step_05 or {},
+        "step_06": bot_config.step_06 or {},
     }
 
     if args.parallel or args.fake:
