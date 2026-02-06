@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 
 from bot.config.loader import InstanceConfig, load_bot_config, load_instances_config
+from bot.core.dependency_check import validate_runtime_dependencies
 from bot.runner.instance_runner import run_instance
 from bot.runner.multiprocess import run_parallel
 
@@ -24,6 +25,7 @@ def main() -> int:
     parser.add_argument("--fake", action="store_true", help="Executa duas instâncias fake em paralelo")
     args = parser.parse_args()
 
+    validate_runtime_dependencies()
     bot_config = load_bot_config(args.bot_config)
     instances = fake_instances() if args.fake else load_instances_config(args.instances_config).instances
 
@@ -36,6 +38,10 @@ def main() -> int:
         "templates_dir": bot_config.templates_dir,
         "logs_dir": bot_config.logs_dir,
         "templates": bot_config.templates or {},
+        "chrome_package": bot_config.chrome_package,
+        "vpn_package": bot_config.vpn_package,
+        "step_01": bot_config.step_01 or {},
+        "step_03": bot_config.step_03 or {},
     }
 
     if args.parallel or args.fake:

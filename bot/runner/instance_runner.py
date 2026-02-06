@@ -12,20 +12,34 @@ from bot.core.exceptions import CriticalFail, SoftFail
 from bot.core.logger import setup_instance_logger
 from bot.core.vision import Vision
 from bot.flow.step_01_home import Step01Home
+from bot.flow.step_02_roleta import Step02Roleta
+from bot.flow.step_03_confirm_home import Step03ConfirmHome
 from bot.flow.step_base import Step, StepContext
 
 
 def default_steps() -> Iterable[Step]:
-    return [Step01Home()]
+    return [Step01Home(), Step02Roleta(), Step03ConfirmHome()]
 
 
-def _snapshot_failure(context: StepContext, step_name: str) -> None:
+def _snapshot_failure(context: StepContext, step_name: str, attempt: int | None = None) -> None:
     logs_dir = context.config.get("logs_dir", "logs")
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    snapshot_path = Path(logs_dir) / "snapshots" / context.instance_id / f"{timestamp}_{step_name}.png"
+    attempt_label = attempt if attempt is not None else context.config.get("current_attempt", "na")
+    snapshot_path = (
+        Path(logs_dir)
+        / "snapshots"
+        / context.instance_id
+        / f"{timestamp}_{context.instance_id}_{step_name}_attempt{attempt_label}.png"
+    )
     try:
         context.adb.screencap(str(snapshot_path))
-        context.logger.error("Snapshot de falha salvo em %s", snapshot_path)
+        context.logger.error(
+            "[inst=%s][step=%s][attempt=%s] Snapshot de falha salvo em %s",
+            context.instance_id,
+            step_name,
+            attempt_label,
+            snapshot_path,
+        )
     except Exception as exc:  # noqa: BLE001 - best effort em falha crítica
         context.logger.warning("Não foi possível salvar snapshot de falha: %s", exc)
 
