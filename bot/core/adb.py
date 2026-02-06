@@ -66,6 +66,13 @@ class ADBClient(IAdb):
     def stop_app(self, package: str) -> None:
         self._run_text("shell", "am", "force-stop", package)
 
+    def input_text(self, text: str) -> None:
+        encoded = text.replace(" ", "%s")
+        self._run_text("shell", "input", "text", encoded)
+
+    def open_url(self, url: str) -> None:
+        self._run_text("shell", "am", "start", "-a", "android.intent.action.VIEW", "-d", url)
+
     def screencap(self, output_path: str) -> Path:
         destination = Path(output_path)
         destination.parent.mkdir(parents=True, exist_ok=True)

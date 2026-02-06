@@ -43,6 +43,12 @@ class FakeADB:
     def stop_app(self, package: str) -> None:
         self.calls.append(("stop_app", (package,)))
 
+    def input_text(self, text: str) -> None:
+        self.calls.append(("input_text", (text,)))
+
+    def open_url(self, url: str) -> None:
+        self.calls.append(("open_url", (url,)))
+
     def screencap(self, output_path: str) -> Path:
         self.calls.append(("screencap", (output_path,)))
         destination = Path(output_path)
