@@ -21,6 +21,8 @@ from bot.flow.step_05_roleta_principal import Step05RoletaPrincipal
 from bot.flow.step_06_noko_box import Step06NokoBox
 from bot.flow.step_07_vpn import Step07VPN
 from bot.flow.step_08_chrome_bonus import Step08ChromeBonus
+from bot.flow.step_09_bonus_collect import Step09BonusCollect
+from bot.flow.step_10_finalize import Step10Finalize
 from bot.flow.step_base import Step, StepContext
 
 
@@ -34,6 +36,8 @@ def default_steps() -> Iterable[Step]:
         Step06NokoBox(),
         Step07VPN(),
         Step08ChromeBonus(),
+        Step09BonusCollect(),
+        Step10Finalize(),
     ]
 
 
@@ -123,6 +127,7 @@ def run_instance(instance: InstanceConfig, bot_config: dict[str, Any]) -> int:
     context.metrics.setdefault("step_durations", {})
     context.metrics.setdefault("breaker_tripped", False)
     context.metrics.setdefault("critical_reason", "")
+    context.metrics.setdefault("reasons_count", {})
     current_step = "bootstrap"
     started_at = monotonic()
 
@@ -153,10 +158,16 @@ def run_instance(instance: InstanceConfig, bot_config: dict[str, Any]) -> int:
                 context.metrics["steps"][step.name] = "ok"
             except SoftFail as exc:
                 softfails += 1
+                reason_key = str(exc.reason)
+                reasons = context.metrics.setdefault("reasons_count", {})
+                reasons[reason_key] = reasons.get(reason_key, 0) + 1
                 context.metrics["steps"][step.name] = f"soft_fail: {exc}"
                 logger.warning("SoftFail em %s: %s", step, exc)
             except CriticalFail as exc:
                 criticals += 1
+                reason_key = str(exc.reason)
+                reasons = context.metrics.setdefault("reasons_count", {})
+                reasons[reason_key] = reasons.get(reason_key, 0) + 1
                 context.metrics["critical_reason"] = str(exc.reason)
                 context.metrics["steps"][step.name] = f"critical_fail: {exc}"
                 logger.error("CriticalFail em %s: %s", step, exc)
@@ -182,13 +193,15 @@ def run_instance(instance: InstanceConfig, bot_config: dict[str, Any]) -> int:
         roleta = context.metrics.get("step_05_roleta_principal", {})
         noko = context.metrics.get("step_06_noko_box", {})
         logger.info(
-            "Resumo final | run_id=%s | steps=%s | step_durations=%s | critical_reason=%s | breaker_tripped=%s | breaker_reason=%s | amigos(collected=%s,sent=%s,interactions=%s,enter_attempts=%s) | roleta(spins_done=%s,timeouts=%s,recoveries=%s) | noko(opened=%s,empty=%s,collected=%s,recoveries=%s) | tempo_total=%.2fs",
+            "Resumo final | run_id=%s | steps=%s | step_durations=%s | critical_reason=%s | reasons_count=%s | breaker_tripped=%s | breaker_reason=%s | finished=%s | amigos(collected=%s,sent=%s,interactions=%s,enter_attempts=%s) | roleta(spins_done=%s,timeouts=%s,recoveries=%s) | noko(opened=%s,empty=%s,collected=%s,recoveries=%s) | tempo_total=%.2fs",
             run_id,
             context.metrics.get("steps", {}),
             context.metrics.get("step_durations", {}),
             context.metrics.get("critical_reason", ""),
+            context.metrics.get("reasons_count", {}),
             context.metrics.get("breaker_tripped", False),
             context.metrics.get("breaker_reason", ""),
+            context.metrics.get("finished", False),
             amigos.get("collected", 0),
             amigos.get("sent", 0),
             amigos.get("interactions", 0),

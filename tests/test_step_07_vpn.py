@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from bot.core.exceptions import CriticalFail, SoftFail
+from bot.core.exceptions import CriticalFail, Reason, SoftFail
 from bot.flow.step_07_vpn import Step07VPN
 from bot.flow.step_base import StepContext
 
@@ -93,8 +93,16 @@ class Step07VPNTests(unittest.TestCase):
     def test_vpn_timeout_critical(self) -> None:
         adb = FakeADBRecorder(self.fixture)
         vision = FakeVisionVPN(connected=False, connect_after_click=False)
-        with self.assertRaises(CriticalFail):
+        with self.assertRaises(CriticalFail) as err:
             Step07VPN().run(self._context(adb, vision))
+        self.assertEqual(err.exception.reason, Reason.VPN_TIMEOUT)
+
+    def test_vpn_error_critical(self) -> None:
+        adb = FakeADBRecorder(self.fixture)
+        vision = FakeVisionVPN(connected=False, connect_after_click=False, error=True)
+        with self.assertRaises(CriticalFail) as err:
+            Step07VPN().run(self._context(adb, vision))
+        self.assertEqual(err.exception.reason, Reason.VPN_ERROR)
 
 
 if __name__ == "__main__":
