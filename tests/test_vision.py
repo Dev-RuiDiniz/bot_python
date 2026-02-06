@@ -99,5 +99,22 @@ class VisionTests(unittest.TestCase):
         tap_calls = [call for call in adb.calls if call[0] == "tap"]
         self.assertEqual(len(tap_calls), 1)
 
+    def test_find_best_returns_score_and_box(self) -> None:
+        screen = self.screens / "screen_with_home.png"
+        result = self.vision.find_best(str(screen), "home.tela_home")
+        self.assertIn("score", result)
+        self.assertIn("top_left", result)
+        self.assertIn("bottom_right", result)
+
+    def test_template_confidence_override(self) -> None:
+        strict = Vision(
+            str(self.templates),
+            default_confidence=1.01,
+            templates_confidence={"home.tela_home": 0.88},
+        )
+        screen = self.screens / "screen_with_home.png"
+        self.assertTrue(strict.exists(str(screen), "home.tela_home"))
+        self.assertFalse(strict.exists(str(screen), "home.botao_home"))
+
 if __name__ == "__main__":
     unittest.main()

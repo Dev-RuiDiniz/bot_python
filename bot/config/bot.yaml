@@ -1,6 +1,7 @@
 adb_bin: adb
 templates_dir: bot/assets/templates
 logs_dir: logs
+default_confidence: 0.88
 chrome_package: com.android.chrome
 vpn_package: com.vpn.app
 templates:
@@ -16,6 +17,18 @@ templates:
   amigos.botao_recolher: amigos/botao_recolher.png
   amigos.botao_enviar: amigos/botao_enviar.png
   amigos.sem_presentes: amigos/sem_presentes.png
+  roleta.botao_roleta_principal: roleta/botao_roleta_principal.png
+  roleta.botao_girar: roleta/botao_girar.png
+  roleta.resultado: roleta/resultado.png
+  roleta.botao_sair: roleta/botao_sair.png
+  noko.botao_noko_box: noko/botao_noko_box.png
+  noko.tela: noko/tela.png
+  noko.vazia: noko/vazia.png
+  noko.sair: noko/sair.png
+templates_confidence:
+  roleta.botao_girar: 0.90
+  roleta.resultado: 0.91
+  noko.vazia: 0.89
 step_01:
   max_attempts: 3
   home_timeout_s: 12
@@ -31,3 +44,13 @@ step_04:
   timeout_loop: 8
   enter_retries: 2
   click_jitter_px: 2
+
+step_05:
+  spins: 2
+  spin_timeout: 6
+  result_timeout: 10
+
+step_06:
+  timeout_enter: 6
+  timeout_collect: 4
+  collect_clicks: 2

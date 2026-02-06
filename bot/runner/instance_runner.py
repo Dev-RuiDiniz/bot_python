@@ -17,11 +17,13 @@ from bot.flow.step_01_home import Step01Home
 from bot.flow.step_02_roleta import Step02Roleta
 from bot.flow.step_03_confirm_home import Step03ConfirmHome
 from bot.flow.step_04_amigos import Step04Amigos
+from bot.flow.step_05_roleta_principal import Step05RoletaPrincipal
+from bot.flow.step_06_noko_box import Step06NokoBox
 from bot.flow.step_base import Step, StepContext
 
 
 def default_steps() -> Iterable[Step]:
-    return [Step01Home(), Step02Roleta(), Step03ConfirmHome(), Step04Amigos()]
+    return [Step01Home(), Step02Roleta(), Step03ConfirmHome(), Step04Amigos(), Step05RoletaPrincipal(), Step06NokoBox()]
 
 
 def _snapshot_failure(context: StepContext, step_name: str, attempt: int | None = None) -> None:
@@ -73,6 +75,8 @@ def run_instance(instance: InstanceConfig, bot_config: dict[str, Any]) -> int:
     vision = Vision(
         templates_dir=bot_config.get("templates_dir", "bot/assets/templates"),
         template_map=bot_config.get("templates", {}),
+        default_confidence=float(bot_config.get("default_confidence", 0.90)),
+        templates_confidence=bot_config.get("templates_confidence", {}) or {},
     )
     context_config = {
         **bot_config,
@@ -118,14 +122,23 @@ def run_instance(instance: InstanceConfig, bot_config: dict[str, Any]) -> int:
     finally:
         elapsed = monotonic() - started_at
         amigos = context.metrics.get("step_04_amigos", {})
+        roleta = context.metrics.get("step_05_roleta_principal", {})
+        noko = context.metrics.get("step_06_noko_box", {})
         logger.info(
-            "Resumo final | run_id=%s | steps=%s | amigos(collected=%s,sent=%s,interactions=%s,enter_attempts=%s) | tempo_total=%.2fs",
+            "Resumo final | run_id=%s | steps=%s | amigos(collected=%s,sent=%s,interactions=%s,enter_attempts=%s) | roleta(spins_done=%s,timeouts=%s,recoveries=%s) | noko(opened=%s,empty=%s,collected=%s,recoveries=%s) | tempo_total=%.2fs",
             run_id,
             context.metrics.get("steps", {}),
             amigos.get("collected", 0),
             amigos.get("sent", 0),
             amigos.get("interactions", 0),
             amigos.get("enter_attempts", 0),
+            roleta.get("spins_done", 0),
+            roleta.get("timeouts", 0),
+            roleta.get("recoveries", 0),
+            noko.get("opened", 0),
+            noko.get("empty", 0),
+            noko.get("collected", 0),
+            noko.get("recoveries", 0),
             elapsed,
         )
         _safe_shutdown(context, instance)
