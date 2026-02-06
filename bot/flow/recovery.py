@@ -6,6 +6,7 @@ import time
 from typing import Callable
 
 from bot.core.exceptions import SoftFail
+from bot.core.template_ids import T_HOME_BUTTON, T_HOME_SCREEN
 from bot.flow.step_base import StepContext
 
 
@@ -15,7 +16,7 @@ def recover_to_home(context: StepContext, capture_fn: Callable[[], str], back_li
         context.adb.keyevent(4)  # KEYCODE_BACK
         time.sleep(0.4)
         screen_path = capture_fn()
-        if context.vision.exists(screen_path, "home.tela_home", threshold=0.88):
+        if context.vision.exists(screen_path, T_HOME_SCREEN, threshold=0.88):
             context.logger.info("Recovery concluiu em home via BACK")
             return True
 
@@ -23,13 +24,13 @@ def recover_to_home(context: StepContext, capture_fn: Callable[[], str], back_li
         context.vision.click_template(
             capture_fn=capture_fn,
             adb=context.adb,
-            template_name="home.botao_home",
+            template_name=T_HOME_BUTTON,
             threshold=0.88,
             logger=context.logger,
         )
         time.sleep(0.4)
         screen_path = capture_fn()
-        if context.vision.exists(screen_path, "home.tela_home", threshold=0.88):
+        if context.vision.exists(screen_path, T_HOME_SCREEN, threshold=0.88):
             context.logger.info("Recovery concluiu em home via botão")
             return True
     except SoftFail:

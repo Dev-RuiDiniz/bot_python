@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from bot.core.adb_interface import IAdb
@@ -17,6 +17,8 @@ class StepContext:
     vision: Any
     logger: logging.Logger
     config: dict[str, Any]
+    run_id: str = "manual"
+    metrics: dict[str, Any] = field(default_factory=dict)
 
 
 class Step(ABC):

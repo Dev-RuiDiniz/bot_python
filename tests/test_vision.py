@@ -76,5 +76,28 @@ class VisionTests(unittest.TestCase):
         self.assertEqual(tap_calls[0][1], result["center"])
 
 
+    def test_wait_and_click_with_jitter(self) -> None:
+        seq = [self.screens / "screen_home_and_button.png"]
+        adb = FakeADB(seq)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            p = Path(tmp) / "screen.png"
+
+            def capture() -> str:
+                return str(adb.screencap(str(p)))
+
+            self.vision.wait_and_click(
+                capture,
+                adb,
+                "home.botao_home",
+                timeout_s=1,
+                threshold=0.88,
+                jitter_px=2,
+                post_sleep_s=0,
+            )
+
+        tap_calls = [call for call in adb.calls if call[0] == "tap"]
+        self.assertEqual(len(tap_calls), 1)
+
 if __name__ == "__main__":
     unittest.main()
