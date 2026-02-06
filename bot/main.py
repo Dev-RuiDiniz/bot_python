@@ -42,11 +42,20 @@ def main() -> int:
         "templates_confidence": bot_config.templates_confidence or {},
         "chrome_package": bot_config.chrome_package,
         "vpn_package": bot_config.vpn_package,
+        "breaker": bot_config.breaker or {},
+        "shutdown_retries": bot_config.shutdown_retries,
+        "shutdown_retry_delay_s": bot_config.shutdown_retry_delay_s,
+        "chrome_activity": bot_config.chrome_activity,
+        "bonus_url": bot_config.bonus_url,
         "step_01": bot_config.step_01 or {},
         "step_03": bot_config.step_03 or {},
         "step_04": bot_config.step_04 or {},
         "step_05": bot_config.step_05 or {},
         "step_06": bot_config.step_06 or {},
+        "step_07": bot_config.step_07 or {},
+        "step_08": bot_config.step_08 or {},
+        "step_09": bot_config.step_09 or {},
+        "step_10": bot_config.step_10 or {},
     }
 
     if args.parallel or args.fake:

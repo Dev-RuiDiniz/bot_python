@@ -39,4 +39,4 @@ class Step08ChromeBonus(Step):
         except SoftFail as exc:
             if context.vision.exists(capture(), T_CHROME_CAPTCHA):
                 raise CriticalFail(f"{self.name}: captcha detectado", reason=Reason.CAPTCHA_DETECTED) from exc
-            raise CriticalFail(f"{self.name}: página bônus não carregou", reason=Reason.HOME_NOT_FOUND) from exc
+            raise CriticalFail(f"{self.name}: página bônus não carregou", reason=Reason.BONUS_PAGE_NOT_FOUND) from exc

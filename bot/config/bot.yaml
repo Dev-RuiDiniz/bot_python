@@ -32,6 +32,9 @@ templates:
   chrome.barra_endereco: chrome/barra_endereco.png
   chrome.pagina_bonus: chrome/pagina_bonus.png
   chrome.captcha: chrome/captcha.png
+  bonus.botao_bonus_disponivel: bonus/botao_bonus_disponivel.png
+  bonus.bonus_coletado: bonus/bonus_coletado.png
+  bonus.bonus_indisponivel: bonus/bonus_indisponivel.png
 templates_confidence:
   roleta.botao_girar: 0.9
   roleta.resultado: 0.91
@@ -70,3 +73,8 @@ step_08:
   timeout_page: 12
   navigation_mode: intent
   bonus_url: https://example.com/bonus
+
+step_09:
+  timeout_bonus: 8
+step_10:
+  ensure_home: true

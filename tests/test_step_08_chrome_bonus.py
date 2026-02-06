@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from bot.core.exceptions import CriticalFail, SoftFail
+from bot.core.exceptions import CriticalFail, Reason, SoftFail
 from bot.flow.step_08_chrome_bonus import Step08ChromeBonus
 from bot.flow.step_base import StepContext
 
@@ -91,9 +91,16 @@ class Step08ChromeBonusTests(unittest.TestCase):
     def test_captcha_detected_critical(self) -> None:
         adb = FakeADBRecorder(self.fixture)
         vision = FakeVisionChrome(page_ok=False, captcha=True)
-        with self.assertRaises(CriticalFail):
+        with self.assertRaises(CriticalFail) as err:
             Step08ChromeBonus().run(self._context(adb, vision))
+        self.assertEqual(err.exception.reason, Reason.CAPTCHA_DETECTED)
 
+    def test_bonus_page_not_found_reason(self) -> None:
+        adb = FakeADBRecorder(self.fixture)
+        vision = FakeVisionChrome(page_ok=False, captcha=False)
+        with self.assertRaises(CriticalFail) as err:
+            Step08ChromeBonus().run(self._context(adb, vision))
+        self.assertEqual(err.exception.reason, Reason.BONUS_PAGE_NOT_FOUND)
 
 if __name__ == "__main__":
     unittest.main()

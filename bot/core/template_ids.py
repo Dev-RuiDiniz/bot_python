@@ -34,3 +34,8 @@ T_VPN_ERRO = "vpn.erro"
 T_CHROME_BARRA_ENDERECO = "chrome.barra_endereco"
 T_CHROME_PAGINA_BONUS = "chrome.pagina_bonus"
 T_CHROME_CAPTCHA = "chrome.captcha"
+
+
+T_BONUS_BOTAO_DISPONIVEL = "bonus.botao_bonus_disponivel"
+T_BONUS_COLETADO = "bonus.bonus_coletado"
+T_BONUS_INDISPONIVEL = "bonus.bonus_indisponivel"

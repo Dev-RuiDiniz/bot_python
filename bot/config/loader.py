@@ -22,6 +22,15 @@ class BotConfig:
     step_04: dict[str, Any] | None = None
     step_05: dict[str, Any] | None = None
     step_06: dict[str, Any] | None = None
+    step_07: dict[str, Any] | None = None
+    step_08: dict[str, Any] | None = None
+    step_09: dict[str, Any] | None = None
+    step_10: dict[str, Any] | None = None
+    breaker: dict[str, Any] | None = None
+    shutdown_retries: int = 3
+    shutdown_retry_delay_s: float = 0.3
+    chrome_activity: str = "com.google.android.apps.chrome.Main"
+    bonus_url: str = "https://example.com/bonus"
 
     @classmethod
     def from_dict(cls, raw: dict[str, Any]) -> "BotConfig":
@@ -39,6 +48,15 @@ class BotConfig:
             step_04=raw.get("step_04", {}) or {},
             step_05=raw.get("step_05", {}) or {},
             step_06=raw.get("step_06", {}) or {},
+            step_07=raw.get("step_07", {}) or {},
+            step_08=raw.get("step_08", {}) or {},
+            step_09=raw.get("step_09", {}) or {},
+            step_10=raw.get("step_10", {}) or {},
+            breaker=raw.get("breaker", {}) or {},
+            shutdown_retries=int(raw.get("shutdown_retries", 3)),
+            shutdown_retry_delay_s=float(raw.get("shutdown_retry_delay_s", 0.3)),
+            chrome_activity=raw.get("chrome_activity", "com.google.android.apps.chrome.Main"),
+            bonus_url=raw.get("bonus_url", "https://example.com/bonus"),
         )
 
 
