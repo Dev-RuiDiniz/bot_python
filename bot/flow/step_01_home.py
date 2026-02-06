@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 import time
 
-from bot.core.exceptions import CriticalFail, SoftFail
+from bot.core.exceptions import CriticalFail, Reason, SoftFail
 from bot.core.template_ids import T_ERROR_APP_CRASH, T_ERROR_CONN, T_HOME_SCREEN
 from bot.flow.recovery import recover_to_home
 from bot.flow.step_base import Step, StepContext
@@ -78,4 +78,4 @@ class Step01Home(Step):
 
             recover_to_home(context, capture, back_limit=retries_back)
 
-        raise CriticalFail(f"{self.name}: falha ao validar home após {max_attempts} tentativas")
+        raise CriticalFail(f"{self.name}: falha ao validar home após {max_attempts} tentativas", reason=Reason.HOME_NOT_FOUND)

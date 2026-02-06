@@ -24,3 +24,13 @@ T_NOKO_BOX = "noko.botao_noko_box"
 T_NOKO_TELA = "noko.tela"
 T_NOKO_VAZIA = "noko.vazia"
 T_NOKO_SAIR = "noko.sair"
+
+
+T_VPN_CONECTADA = "vpn.conectada"
+T_VPN_DESCONECTADA = "vpn.desconectada"
+T_VPN_CONECTAR = "vpn.conectar"
+T_VPN_ERRO = "vpn.erro"
+
+T_CHROME_BARRA_ENDERECO = "chrome.barra_endereco"
+T_CHROME_PAGINA_BONUS = "chrome.pagina_bonus"
+T_CHROME_CAPTCHA = "chrome.captcha"

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
-from time import monotonic
+from time import monotonic, sleep
 from typing import Any, Iterable
 from uuid import uuid4
 
@@ -19,11 +19,22 @@ from bot.flow.step_03_confirm_home import Step03ConfirmHome
 from bot.flow.step_04_amigos import Step04Amigos
 from bot.flow.step_05_roleta_principal import Step05RoletaPrincipal
 from bot.flow.step_06_noko_box import Step06NokoBox
+from bot.flow.step_07_vpn import Step07VPN
+from bot.flow.step_08_chrome_bonus import Step08ChromeBonus
 from bot.flow.step_base import Step, StepContext
 
 
 def default_steps() -> Iterable[Step]:
-    return [Step01Home(), Step02Roleta(), Step03ConfirmHome(), Step04Amigos(), Step05RoletaPrincipal(), Step06NokoBox()]
+    return [
+        Step01Home(),
+        Step02Roleta(),
+        Step03ConfirmHome(),
+        Step04Amigos(),
+        Step05RoletaPrincipal(),
+        Step06NokoBox(),
+        Step07VPN(),
+        Step08ChromeBonus(),
+    ]
 
 
 def _snapshot_failure(context: StepContext, step_name: str, attempt: int | None = None) -> None:
@@ -50,22 +61,39 @@ def _snapshot_failure(context: StepContext, step_name: str, attempt: int | None 
 
 
 def _safe_shutdown(context: StepContext, instance: InstanceConfig) -> None:
-    context.logger.info("Iniciando safe shutdown (best effort)")
+    context.logger.info("Iniciando safe shutdown (com retry)")
     packages_to_stop = [
         instance.app_package,
         context.config.get("chrome_package", "com.android.chrome"),
         context.config.get("vpn_package", "com.vpn.app"),
     ]
+    retries = int(context.config.get("shutdown_retries", 3))
+    retry_delay_s = float(context.config.get("shutdown_retry_delay_s", 0.3))
+
     for package in packages_to_stop:
-        try:
-            context.adb.stop_app(package)
-            context.logger.info("Safe shutdown: app encerrado (%s)", package)
-        except Exception as exc:  # noqa: BLE001 - best effort shutdown
-            context.logger.warning("Safe shutdown: falha ao encerrar %s (%s)", package, exc)
+        stopped = False
+        for attempt in range(1, retries + 1):
+            try:
+                context.adb.stop_app(package)
+                context.logger.info("Safe shutdown: app encerrado (%s) na tentativa %d/%d", package, attempt, retries)
+                stopped = True
+                break
+            except Exception as exc:  # noqa: BLE001 - best effort shutdown
+                context.logger.warning(
+                    "Safe shutdown: falha ao encerrar %s na tentativa %d/%d (%s)", package, attempt, retries, exc
+                )
+                sleep(retry_delay_s)
+        if not stopped:
+            context.logger.error("Safe shutdown: não foi possível encerrar %s após %d tentativas", package, retries)
 
 
 def _make_run_id() -> str:
     return f"{datetime.now().strftime('%Y%m%d')}-{uuid4().hex[:4]}"
+
+
+def _trip_breaker(context: StepContext, reason: str) -> None:
+    context.metrics["breaker_tripped"] = True
+    context.metrics["breaker_reason"] = reason
 
 
 def run_instance(instance: InstanceConfig, bot_config: dict[str, Any]) -> int:
@@ -91,29 +119,58 @@ def run_instance(instance: InstanceConfig, bot_config: dict[str, Any]) -> int:
         config=context_config,
         run_id=run_id,
     )
+    context.metrics.setdefault("steps", {})
+    context.metrics.setdefault("step_durations", {})
+    context.metrics.setdefault("breaker_tripped", False)
+    context.metrics.setdefault("critical_reason", "")
     current_step = "bootstrap"
     started_at = monotonic()
+
+    breaker_cfg = bot_config.get("breaker", {}) or {}
+    soft_limit = int(breaker_cfg.get("softfails", 3))
+    critical_limit = int(breaker_cfg.get("criticals", 1))
+    softfails = 0
+    criticals = 0
 
     try:
         logger.info("Iniciando instância %s", instance.instance_id)
         adb.connect()
         for step in default_steps():
+            if softfails >= soft_limit:
+                _trip_breaker(context, f"softfails>={soft_limit}")
+                logger.error("Circuit breaker acionado por softfails (%d)", softfails)
+                break
+            if criticals >= critical_limit:
+                _trip_breaker(context, f"criticals>={critical_limit}")
+                logger.error("Circuit breaker acionado por criticals (%d)", criticals)
+                break
+
             current_step = step.name
             logger.info("Executando %s", step)
+            step_started = monotonic()
             try:
                 step.run(context)
-                context.metrics.setdefault("steps", {})[step.name] = "ok"
+                context.metrics["steps"][step.name] = "ok"
             except SoftFail as exc:
-                context.metrics.setdefault("steps", {})[step.name] = f"soft_fail: {exc}"
+                softfails += 1
+                context.metrics["steps"][step.name] = f"soft_fail: {exc}"
                 logger.warning("SoftFail em %s: %s", step, exc)
+            except CriticalFail as exc:
+                criticals += 1
+                context.metrics["critical_reason"] = str(exc.reason)
+                context.metrics["steps"][step.name] = f"critical_fail: {exc}"
+                logger.error("CriticalFail em %s: %s", step, exc)
+                _snapshot_failure(context, current_step)
+                if criticals >= critical_limit:
+                    _trip_breaker(context, f"criticals>={critical_limit}")
+                break
+            finally:
+                context.metrics["step_durations"][step.name] = round(monotonic() - step_started, 3)
 
         logger.info("Instância %s finalizada", instance.instance_id)
+        if context.metrics.get("critical_reason"):
+            return 2
         return 0
-    except CriticalFail as exc:
-        logger.error("CriticalFail em %s: %s", instance.instance_id, exc)
-        _snapshot_failure(context, current_step)
-        context.metrics.setdefault("steps", {})[current_step] = f"critical_fail: {exc}"
-        return 2
     except Exception as exc:  # noqa: BLE001
         logger.exception("Erro inesperado em %s: %s", instance.instance_id, exc)
         _snapshot_failure(context, current_step)
@@ -125,9 +182,13 @@ def run_instance(instance: InstanceConfig, bot_config: dict[str, Any]) -> int:
         roleta = context.metrics.get("step_05_roleta_principal", {})
         noko = context.metrics.get("step_06_noko_box", {})
         logger.info(
-            "Resumo final | run_id=%s | steps=%s | amigos(collected=%s,sent=%s,interactions=%s,enter_attempts=%s) | roleta(spins_done=%s,timeouts=%s,recoveries=%s) | noko(opened=%s,empty=%s,collected=%s,recoveries=%s) | tempo_total=%.2fs",
+            "Resumo final | run_id=%s | steps=%s | step_durations=%s | critical_reason=%s | breaker_tripped=%s | breaker_reason=%s | amigos(collected=%s,sent=%s,interactions=%s,enter_attempts=%s) | roleta(spins_done=%s,timeouts=%s,recoveries=%s) | noko(opened=%s,empty=%s,collected=%s,recoveries=%s) | tempo_total=%.2fs",
             run_id,
             context.metrics.get("steps", {}),
+            context.metrics.get("step_durations", {}),
+            context.metrics.get("critical_reason", ""),
+            context.metrics.get("breaker_tripped", False),
+            context.metrics.get("breaker_reason", ""),
             amigos.get("collected", 0),
             amigos.get("sent", 0),
             amigos.get("interactions", 0),
