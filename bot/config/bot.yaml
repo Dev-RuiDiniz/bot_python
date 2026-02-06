@@ -9,7 +9,12 @@ templates:
   erros.popup_erro_conexao: erros/popup_erro_conexao.png
   erros.app_crash: erros/app_crash.png
   roleta.botao_roleta: roleta/botao_roleta.png
+  roleta.botao_fechar: roleta/botao_fechar.png
+  roleta.popup_roleta_disponivel: roleta/popup_roleta_disponivel.png
 step_01:
   max_attempts: 3
   home_timeout_s: 12
+  recovery_back_limit: 3
+
+step_03:
   recovery_back_limit: 3
