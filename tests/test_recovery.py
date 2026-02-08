@@ -16,10 +16,8 @@ class TestRecoveryManager:
 
         assert result is True
         assert adb.actions == [
-            "disable_vpn",
-            "enable_vpn",
-            "retry"
-        ]
+    ('stop_app', ('vpn',)),
+    ('start_app', ('vpn', 'Main')) ]
 
     def test_recovery_from_unknown_error_fails_cleanly(self):
         adb = FakeADB()
@@ -41,4 +39,4 @@ class TestRecoveryManager:
         result = recovery.handle(reasons)
 
         assert result is True
-        assert adb.actions[0] == "disable_vpn"
+        assert adb.actions[0] == ('stop_app', ('vpn',))

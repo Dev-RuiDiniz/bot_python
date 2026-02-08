@@ -1,3 +1,12 @@
-PyYAML
-opencv-python
-numpy
+# --- Core dependencies (Estabilizadas para compatibilidade CPU/Linux) ---
+numpy==1.23.5
+opencv-python-headless==4.6.0.66
+
+# --- Utilities ---
+PyYAML>=6.0
+pydantic>=1.10.0
+colorama>=0.4.6
+
+# --- Testing & ADB ---
+pytest>=7.0.0
+pure-python-adb>=0.3.0.dev0

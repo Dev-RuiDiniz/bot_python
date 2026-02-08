@@ -12,13 +12,15 @@ class FakeADB:
     serial: str = "fake-serial"
     screens: list[Path] = field(default_factory=list)
     current_screen: int = 0
+    actions: list[tuple[str, tuple[object, ...]]] = field(default_factory=list)
     calls: list[tuple[str, tuple[object, ...]]] = field(default_factory=list)
 
     def __init__(self, screens: Iterable[str | Path] | None = None, serial: str = "fake-serial") -> None:
         self.serial = serial
         self.screens = [Path(s) for s in (screens or [])]
         self.current_screen = 0
-        self.calls = []
+        self.actions = []
+        self.calls = self.actions
 
     def set_screens(self, screens: Iterable[str | Path]) -> None:
         self.screens = [Path(s) for s in screens]

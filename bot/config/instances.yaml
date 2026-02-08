@@ -1,5 +1,22 @@
+# ==========================================================
+# CONFIGURAÇÃO DE INSTÂNCIAS (CELULARES / EMULADORES)
+# ==========================================================
+# Você pode adicionar múltiplas instâncias para rodar em paralelo.
+# Para cada instância, identifique o 'serial' via comando: adb devices
+
 instances:
-  - id: emu_01
-    serial: emulator-5554
-    app_package: com.example.app
-    app_activity: .MainActivity
+  - id: "instancia_01"                  # Nome amigável para identificação nos logs
+    serial: "127.0.0.1:21503"           # Para MEmu, geralmente é 127.0.0.1:porta
+    app_package: "com.android.chrome"   # O pacote do app que o bot deve abrir
+    app_activity: "com.google.android.apps.chrome.Main" # Atividade principal do app
+
+  # Exemplo de segunda instância (para teste em paralelo)
+  # - id: "instancia_02"
+  #   serial: "127.0.0.1:21513"
+  #   app_package: "com.android.chrome"
+  #   app_activity: "com.google.android.apps.chrome.Main"
+
+# NOTA PARA O RUI: 
+# Se estiver usando MEmu, certifique-se de ativar o 'Modo ADB' nas 
+# configurações do emulador. Se o dispositivo não aparecer no adb devices,
+# use: adb connect 127.0.0.1:21503

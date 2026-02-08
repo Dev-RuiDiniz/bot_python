@@ -11,10 +11,13 @@ import logging
 
 from bot.core.exceptions import SoftFail
 
-try:
-    import cv2
-except ImportError:  # pragma: no cover - dependency may be optional in bootstrap phase
-    cv2 = None
+cv2 = None
+
+def _lazy_import_cv2():
+    global cv2
+    if cv2 is None:
+        import cv2 as _cv2
+        cv2 = _cv2
 
 
 class Vision:
@@ -32,8 +35,10 @@ class Vision:
         self._templates: dict[str, object] = {}
 
     def _ensure_cv2(self) -> None:
-        if cv2 is None:
-            raise SoftFail("opencv-python is required for vision operations")
+        try:
+            _lazy_import_cv2()
+        except Exception:
+            raise SoftFail("opencv-python is not available in this environment")
 
     def _resolve_template_path(self, name: str) -> Path:
         if name in self.template_map:
