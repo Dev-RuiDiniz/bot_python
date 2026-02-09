@@ -139,17 +139,27 @@ class Vision:
         template_name: str,
         threshold: Optional[float] = None,
         logger: Optional[logging.Logger] = None,
+        jitter_px: int = 5,  # Adicionado padrão de 5 pixels
     ) -> dict[str, object]:
         screen_path = capture_fn()
         result = self.match_template(screen_path, template_name=template_name, threshold=threshold)
+        
         center_x, center_y = result["center"]
+        
+        # --- Humanização do Clique ---
+        if jitter_px > 0:
+            center_x += random.randint(-jitter_px, jitter_px)
+            center_y += random.randint(-jitter_px, jitter_px)
+        
         adb.tap(center_x, center_y)
+        
         (logger or logging.getLogger(__name__)).info(
-            "click_template(%s): confidence=%.3f coords=(%d,%d)",
+            "click_template(%s): confidence=%.3f coords=(%d,%d) jitter=%d",
             template_name,
             result["score"],
             center_x,
             center_y,
+            jitter_px
         )
         return result
 
@@ -183,8 +193,8 @@ class Vision:
         interval_s: float = 0.5,
         threshold: Optional[float] = None,
         logger: Optional[logging.Logger] = None,
-        jitter_px: int = 0,
-        post_sleep_s: float = 0.15,
+        jitter_px: int = 8,  # Aumentado para 8 para maior segurança em jogos
+        post_sleep_s: float = 0.25, # Aumentado levemente para parecer mais humano
     ) -> dict[str, object]:
         result = self.wait_for(
             capture_fn,
@@ -193,11 +203,16 @@ class Vision:
             interval_s=interval_s,
             threshold=threshold,
         )
+        
         center_x, center_y = result["center"]
+        
+        # --- Humanização do Clique ---
         if jitter_px > 0:
             center_x += random.randint(-jitter_px, jitter_px)
             center_y += random.randint(-jitter_px, jitter_px)
+            
         adb.tap(center_x, center_y)
+        
         (logger or logging.getLogger(__name__)).info(
             "wait_and_click(%s): confidence=%.3f coords=(%d,%d) jitter=%d",
             template_name,
@@ -206,6 +221,9 @@ class Vision:
             center_y,
             jitter_px,
         )
+        
         if post_sleep_s > 0:
-            time.sleep(post_sleep_s)
+            # Randomiza também o tempo de espera pós-clique
+            time.sleep(post_sleep_s + random.uniform(0, 0.5)) 
+            
         return result
