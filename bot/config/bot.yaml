@@ -78,3 +78,8 @@ step_09:
   timeout_bonus: 8
 step_10:
   ensure_home: true
+
+emulator:
+  type: "MEmu"
+  path: "D:\\Program Files\\Microvirt\\MEmu\\memuc.exe"
+  instances_limit: 16

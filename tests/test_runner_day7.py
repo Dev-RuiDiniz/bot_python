@@ -14,9 +14,17 @@ from bot.runner import instance_runner
 class FakeADBForRunner:
     stop_failures_left = 0
 
-    def __init__(self, serial: str, adb_bin: str = "adb") -> None:
+    def __init__(self, serial: str, adb_bin: str = "adb", memuc_path: str | None = None) -> None:
         self.serial = serial
         self.calls = []
+
+    def launch_instance(self, timeout: int = 120) -> bool:
+        self.calls.append(("launch_instance", (timeout,)))
+        return True
+
+    def get_screen_resolution(self) -> tuple[int, int]:
+        self.calls.append(("get_screen_resolution", ()))
+        return (1280, 720)
 
     def connect(self) -> None:
         self.calls.append(("connect", ()))

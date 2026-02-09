@@ -103,7 +103,9 @@ def _trip_breaker(context: StepContext, reason: str) -> None:
 def run_instance(instance: InstanceConfig, bot_config: dict[str, Any]) -> int:
     run_id = _make_run_id()
     logger = setup_instance_logger(instance.instance_id, run_id=run_id, logs_dir=bot_config.get("logs_dir", "logs"))
-    adb = ADBClient(serial=instance.serial, adb_bin=bot_config.get("adb_bin", "adb"))
+    emulator_cfg = bot_config.get("emulator", {}) or {}
+    memuc_path = emulator_cfg.get("path") if emulator_cfg.get("type") == "MEmu" else None
+    adb = ADBClient(serial=instance.serial, adb_bin=bot_config.get("adb_bin", "adb"), memuc_path=memuc_path)
     vision = Vision(
         templates_dir=bot_config.get("templates_dir", "bot/assets/templates"),
         template_map=bot_config.get("templates", {}),
@@ -139,7 +141,12 @@ def run_instance(instance: InstanceConfig, bot_config: dict[str, Any]) -> int:
 
     try:
         logger.info("Iniciando instância %s", instance.instance_id)
+        if not adb.launch_instance(timeout=120):
+            raise CriticalFail("Falha ao iniciar instância do emulador")
         adb.connect()
+        width, height = adb.get_screen_resolution()
+        context.metrics["screen_resolution"] = f"{width}x{height}"
+        logger.info("Resolução detectada da instância %s: %sx%s", instance.instance_id, width, height)
         for step in default_steps():
             if softfails >= soft_limit:
                 _trip_breaker(context, f"softfails>={soft_limit}")

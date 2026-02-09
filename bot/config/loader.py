@@ -31,6 +31,7 @@ class BotConfig:
     shutdown_retry_delay_s: float = 0.3
     chrome_activity: str = "com.google.android.apps.chrome.Main"
     bonus_url: str = "https://example.com/bonus"
+    emulator: dict[str, Any] | None = None
 
     @classmethod
     def from_dict(cls, raw: dict[str, Any]) -> "BotConfig":
@@ -57,6 +58,7 @@ class BotConfig:
             shutdown_retry_delay_s=float(raw.get("shutdown_retry_delay_s", 0.3)),
             chrome_activity=raw.get("chrome_activity", "com.google.android.apps.chrome.Main"),
             bonus_url=raw.get("bonus_url", "https://example.com/bonus"),
+            emulator=raw.get("emulator", {}) or {},
         )
 
 

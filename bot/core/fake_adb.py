@@ -42,6 +42,22 @@ class FakeADB:
     def start_app(self, package: str, activity: str) -> None:
         self.calls.append(("start_app", (package, activity)))
 
+    def launch_app(self, package: str, activity: str) -> None:
+        self.start_app(package, activity)
+
+    def get_screen_resolution(self) -> tuple[int, int]:
+        return (1280, 720)
+
+    def is_running(self) -> bool:
+        return True
+
+    def launch_instance(self, timeout: int = 120) -> bool:
+        self.calls.append(("launch_instance", (timeout,)))
+        return True
+
+    def list_instances(self) -> list[dict[str, object]]:
+        return []
+
     def stop_app(self, package: str) -> None:
         self.calls.append(("stop_app", (package,)))
 
