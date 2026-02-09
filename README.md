@@ -4,6 +4,14 @@ Bot de automação Android orientado a **fluxo por etapas** (steps), com execuç
 
 O projeto foi estruturado para funcionar tanto com ADB real quanto com execução totalmente testável em ambiente sem device (via mocks/fakes nos testes).
 
+## Últimas atualizações
+
+- **Humanização de clique por jitter** em `Vision.click_template` e `Vision.wait_and_click`.
+  - deslocamento aleatório configurável em pixels (`jitter_px`);
+  - log agora registra coordenadas finais e jitter aplicado;
+  - `wait_and_click` aplica pequeno atraso aleatório pós-clique para reduzir padrão robótico.
+- **Assets reorganizados por contexto** em `bot/assets/templates/` (ex.: `poker/`, `roleta/`, `vpn/`, `popups/`), facilitando manutenção e evolução do conjunto de templates.
+
 ## Visão geral do funcionamento
 
 A execução principal acontece em `python -m bot.main`:
@@ -135,7 +143,13 @@ python -m bot.main --fake
 
 ## Testes
 
-Executar suíte completa:
+Executar suíte completa (recomendado):
+
+```bash
+python -m pytest -q
+```
+
+Alternativa compatível com `unittest`:
 
 ```bash
 python -m unittest discover -s tests -v
