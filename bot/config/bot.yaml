@@ -1,4 +1,4 @@
-adb_bin: adb
+adb_bin: "D:\\Program Files\\Microvirt\\MEmu\\adb.exe"
 templates_dir: bot/assets/templates
 logs_dir: logs
 default_confidence: 0.88

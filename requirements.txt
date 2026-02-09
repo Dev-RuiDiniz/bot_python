@@ -1,12 +1,12 @@
-# --- Core dependencies (Estabilizadas para compatibilidade CPU/Linux) ---
-numpy==1.23.5
-opencv-python-headless==4.6.0.66
+# --- Core dependencies (Windows / Python 3.13) ---
+numpy>=2.1.0
+opencv-python>=4.10.0.84
 
 # --- Utilities ---
-PyYAML>=6.0
-pydantic>=1.10.0
+PyYAML>=6.0.1
+pydantic>=2.6.0
 colorama>=0.4.6
 
 # --- Testing & ADB ---
-pytest>=7.0.0
+pytest>=8.0.0
 pure-python-adb>=0.3.0.dev0
